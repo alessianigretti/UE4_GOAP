@@ -9,14 +9,29 @@ FString UEatAction::GetName()
 	return "Eat";
 }
 
-float UEatAction::GetGoalChange(const FGoal& goal)
+FState UEatAction::GetCondition()
 {
-	if (goal.Name == "Eat")
-	{
-		return 1.0f;
-	}
-	else
-	{
-		return 0.0f;
-	}
+	FState hasFoodCondition;
+	hasFoodCondition.StateType = EStateType::HasFood;
+	hasFoodCondition.Value = true;
+
+	return hasFoodCondition;
+}
+
+TArray<FState> UEatAction::GetEffects()
+{
+	TArray<FState> effects;
+
+	FState isHungryState;
+	isHungryState.StateType = EStateType::IsHungry;
+	isHungryState.Value = false;
+
+	FState hasFoodState;
+	hasFoodState.StateType = EStateType::HasFood;
+	hasFoodState.Value = false;
+
+	effects.Add(isHungryState);
+	effects.Add(hasFoodState);
+
+	return effects;
 }

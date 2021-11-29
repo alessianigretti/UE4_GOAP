@@ -3,24 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include <vector>
 #include "UObject/NoExportTypes.h"
 #include "Builder.generated.h"
 
 class UAction;
+class UWorldModel;
 
-using namespace std;
+UENUM()
+enum EStateType
+{
+	None,
+	IsHungry,
+	HasFood,
+	HasWater,
+	IsRested,
+};
 
 USTRUCT()
-struct FGoal
+struct FState
 {
 	GENERATED_BODY()
 
 	UPROPERTY()
-	FString Name;
+	TEnumAsByte<EStateType> StateType;
 
 	UPROPERTY()
-	float Insistence;
+	bool Value;
 };
 
 /**
@@ -33,9 +41,14 @@ class GOALORIENTEDBEHAVIOR_API UBuilder : public UObject
 	
 public:
 	void Build();
-	UAction* ChooseAction();
+	TArray<UAction*> PlanAction();
 
 private:
-	vector<FGoal> goals;
-	vector<UAction*> actions;
+	UAction* GetActionThatFulfillsGoal(FState goalState);
+	bool DoesFulfillGoal(FState goalState, UAction* action);
+	bool IsLegalAction(TArray<FState> currentStates, UAction* action);
+
+	TArray<UAction*> actions;
+	FState initialState;
+	FState finalState;
 };

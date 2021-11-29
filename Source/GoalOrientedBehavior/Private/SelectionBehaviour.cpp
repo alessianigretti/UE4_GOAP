@@ -20,7 +20,7 @@ void USelectionBehaviour::BeginPlay()
 
 	UBuilder* builder = NewObject<UBuilder>();
 	builder->Build();
-	builder->ChooseAction();
+	builder->PlanAction();
 }
 
 

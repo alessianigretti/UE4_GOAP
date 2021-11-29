@@ -8,9 +8,16 @@ FString UAction::GetName()
 	return "None";
 }
 
-float UAction::GetGoalChange(const FGoal& goal)
+FState UAction::GetCondition()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Goal change Base"));
+	FState condition;
 
-	return 0.0f;
+	return condition;
+}
+
+TArray<FState> UAction::GetEffects()
+{
+	TArray<FState> effects;
+
+	return effects;
 }

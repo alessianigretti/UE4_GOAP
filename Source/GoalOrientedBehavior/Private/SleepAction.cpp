@@ -9,14 +9,24 @@ FString USleepAction::GetName()
 	return "Sleep";
 }
 
-float USleepAction::GetGoalChange(const FGoal& goal)
+FState USleepAction::GetCondition()
 {
-	if (goal.Name == "Sleep")
-	{
-		return 1.0f;
-	}
-	else
-	{
-		return 0.0f;
-	}
+	FState condition;
+
+	condition.StateType = EStateType::None;
+
+	return condition;
+}
+
+TArray<FState> USleepAction::GetEffects()
+{
+	TArray<FState> effects;
+
+	FState isRestedState;
+	isRestedState.StateType = EStateType::IsRested;
+	isRestedState.Value = true;
+
+	effects.Add(isRestedState);
+
+	return effects;
 }

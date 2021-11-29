@@ -4,58 +4,115 @@
 #include "Builder.h"
 #include "Action.h"
 #include "EatAction.h"
+#include "BuyFoodAction.h"
 #include "SleepAction.h"
-#include "DanceAction.h"
+#include "WorldModel.h"
+#include "Algo/Reverse.h"
 
 void UBuilder::Build()
 {
 	// Set up actions
 	UEatAction* eatAction = NewObject<UEatAction>();
+	UBuyFoodAction* buyFoodAction = NewObject<UBuyFoodAction>();
 	USleepAction* sleepAction = NewObject<USleepAction>();
-	UDanceAction* danceAction = NewObject<UDanceAction>();
 
-	actions.push_back(eatAction);
-	actions.push_back(sleepAction);
-	actions.push_back(danceAction);
+	actions.Add(eatAction);
+	actions.Add(buyFoodAction);
+	actions.Add(sleepAction);
 
-	// Set up goals
-	FGoal eatGoal;
-	eatGoal.Name = "Eat";
-	eatGoal.Insistence = 5.0f;
+	// Set up current state
+	initialState.StateType = EStateType::IsHungry;
+	initialState.Value = true;
 
-	FGoal sleepGoal;
-	sleepGoal.Name = "Sleep";
-	sleepGoal.Insistence = 3.0f;
-
-	goals.push_back(eatGoal);
-	goals.push_back(sleepGoal);
+	// Set up goal
+	finalState.StateType = EStateType::IsHungry;
+	finalState.Value = false;
 }
 
-UAction* UBuilder::ChooseAction()
+TArray<UAction*> UBuilder::PlanAction()
 {
-	FGoal topGoal = goals[0];
-	for (FGoal goal : goals)
+	TArray<UAction*> plan;
+
+	UWorldModel* worldModel = NewObject<UWorldModel>();
+	worldModel->WorldState.Add(initialState);
+
+	FState tempFinalState;
+	tempFinalState.StateType = finalState.StateType;
+	tempFinalState.Value = finalState.Value;
+
+	while (!worldModel->IsGoalFulfilled(finalState))
 	{
-		if (goal.Insistence > topGoal.Insistence)
+		UAction* action = GetActionThatFulfillsGoal(tempFinalState);
+		if (action == nullptr)
 		{
-			topGoal = goal;
+			break;
 		}
+		
+		plan.Add(action);
+		
+		if (action->GetCondition().StateType == EStateType::None)
+		{
+			break;
+		}
+
+		tempFinalState.StateType = action->GetCondition().StateType;
+		tempFinalState.Value = action->GetCondition().Value;
+
+		if (initialState.StateType == tempFinalState.StateType &&
+			initialState.Value == tempFinalState.Value)
+		{
+			break;
+		}
+	};
+
+	Algo::Reverse(plan);
+
+	for (UAction* action : plan)
+	{
+		FString name = action->GetName();
+		UE_LOG(LogTemp, Warning, TEXT("Chosen action %s"), *name);
 	}
 
-	UAction* bestAction = actions[0];
-	float bestUtility = -actions[0]->GetGoalChange(topGoal);
+	return plan;
+}
+
+UAction* UBuilder::GetActionThatFulfillsGoal(FState goalState)
+{
 	for (UAction* action : actions)
 	{
-		float utility = action->GetGoalChange(topGoal);
-		if (utility > bestUtility)
+		if (DoesFulfillGoal(goalState, action))
 		{
-			bestUtility = utility;
-			bestAction = action;
+			return action;
 		}
 	}
 
-	FString name = bestAction->GetName();
-	UE_LOG(LogTemp, Warning, TEXT("Chosen action %s"), *name);
+	return NULL;
+}
 
-	return bestAction;
+bool UBuilder::DoesFulfillGoal(FState goalState, UAction* action)
+{
+	for (FState effect : action->GetEffects())
+	{
+		if (effect.StateType == goalState.StateType &&
+			effect.Value == goalState.Value)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool UBuilder::IsLegalAction(TArray<FState> currentStates, UAction* action)
+{
+	for (FState stateChecked : currentStates)
+	{
+		if (stateChecked.StateType == action->GetCondition().StateType &&
+			stateChecked.Value == action->GetCondition().Value)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

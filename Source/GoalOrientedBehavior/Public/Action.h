@@ -17,5 +17,6 @@ class GOALORIENTEDBEHAVIOR_API UAction : public UObject
 	
 public:
 	virtual FString GetName();
-	virtual float GetGoalChange(const FGoal& goal);
+	virtual FState GetCondition();
+	virtual TArray<FState> GetEffects();
 };

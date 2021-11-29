@@ -16,5 +16,6 @@ class GOALORIENTEDBEHAVIOR_API UEatAction : public UAction
 	
 protected:
 	FString GetName() override;
-	float GetGoalChange(const FGoal& goal) override;
+	FState GetCondition() override;
+	TArray<FState> GetEffects() override;
 };

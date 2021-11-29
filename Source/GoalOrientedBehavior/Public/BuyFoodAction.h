@@ -4,17 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Action.h"
-#include "DanceAction.generated.h"
+#include "BuyFoodAction.generated.h"
 
 /**
- *
+ * 
  */
 UCLASS()
-class GOALORIENTEDBEHAVIOR_API UDanceAction : public UAction
+class GOALORIENTEDBEHAVIOR_API UBuyFoodAction : public UAction
 {
 	GENERATED_BODY()
 
 protected:
 	FString GetName() override;
-	float GetGoalChange(const FGoal& goal) override;
+	FState GetCondition() override;
+	TArray<FState> GetEffects() override;
 };
